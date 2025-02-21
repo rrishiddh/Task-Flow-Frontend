@@ -12,7 +12,7 @@ const Home = () => {
     category: "todo",
   });
 
-  const apiUrl = "http://localhost:3000/tasks";
+  const apiUrl = "https://job-task-delta.vercel.app/tasks";
 
   const formatDate = (isoDate) => {
     const date = new Date(isoDate);
