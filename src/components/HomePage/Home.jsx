@@ -120,17 +120,18 @@ const Home = () => {
   };
 
   const moveTaskInCategory = async (draggedTask, targetTask) => {
-    const draggedIndex = tasks.indexOf(draggedTask);
-    const targetIndex = tasks.indexOf(targetTask);
-
     const updatedTasks = [...tasks];
-    updatedTasks.splice(draggedIndex, 1);
-    updatedTasks.splice(targetIndex, 0, draggedTask);
-    setTasks(updatedTasks);
-    try {
+    const draggedIndex = updatedTasks.findIndex(
+      (t) => t._id === draggedTask._id
+    );
+    const targetIndex = updatedTasks.findIndex((t) => t._id === targetTask._id);
+
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      updatedTasks.splice(draggedIndex, 1);
+      updatedTasks.splice(targetIndex, 0, draggedTask);
+
+      setTasks(updatedTasks);
       await updateTaskPositions(updatedTasks);
-    } catch (error) {
-      console.error("Failed to update task positions:", error);
     }
   };
 
@@ -146,29 +147,110 @@ const Home = () => {
   };
 
   const Task = ({ task }) => {
-    const [, drag] = useDrag(() => ({
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedTask, setEditedTask] = useState({
+      title: task.title,
+      description: task.description,
+    });
+
+    const [{ isDragging }, drag] = useDrag(() => ({
       type: "TASK",
-      item: task,
+      item: { ...task },
+      collect: (monitor) => ({
+        isDragging: !!monitor.isDragging(),
+      }),
     }));
+
+    const [, drop] = useDrop(() => ({
+      accept: "TASK",
+      hover: (draggedTask) => {
+        if (
+          draggedTask._id !== task._id &&
+          draggedTask.category === task.category
+        ) {
+          moveTaskInCategory(draggedTask, task);
+        }
+      },
+    }));
+
+    const handleEditChange = (e) => {
+      setEditedTask({ ...editedTask, [e.target.name]: e.target.value });
+    };
+
+    const handleSave = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/${task._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editedTask),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update task");
+        }
+
+        setTasks((prevTasks) =>
+          prevTasks.map((t) =>
+            t._id === task._id ? { ...t, ...editedTask } : t
+          )
+        );
+
+        setIsEditing(false);
+      } catch (error) {
+        console.error("Error updating task:", error);
+      }
+    };
 
     return (
       <div
-        ref={drag}
-        className="p-3 bg-gray-100 rounded-lg shadow-sm border border-gray-300 mb-4 dark:text-black  overflow-auto "
+        ref={(node) => drag(drop(node))}
+        className={`p-3 bg-gray-100 rounded-lg shadow-sm border border-gray-300 mb-4 dark:text-black overflow-auto ${
+          isDragging ? "opacity-50" : ""
+        }`}
       >
-        <h3 className="font-semibold text-lg">Title : {task.title}</h3>
-        <p className="text-sm text-gray-600">
-          Description : {task.description}
-        </p>
-        <p className="text-sm text-gray-600">
-          Timestamp : {formatDate(task.timestamp)}
-        </p>
-        <button
-          onClick={() => handleDelete(task._id)}
-          className="text-red-500 mt-2 btn-ghost"
-        >
-          Delete
-        </button>
+        {isEditing ? (
+          <>
+            <input
+              type="text"
+              name="title"
+              value={editedTask.title}
+              onChange={handleEditChange}
+              className="input input-bordered mb-2 w-full"
+            />
+            <input
+              type="text"
+              name="description"
+              value={editedTask.description}
+              onChange={handleEditChange}
+              className="input input-bordered mb-2 w-full"
+            />
+            <button onClick={handleSave} className="btn btn-success">
+              Save
+            </button>
+          </>
+        ) : (
+          <>
+            <h3 className="font-semibold text-lg">Title: {task.title}</h3>
+            <p className="text-sm text-gray-600">
+              Description: {task.description}
+            </p>
+            <p className="text-sm text-gray-600">
+              Timestamp: {formatDate(task.timestamp)}
+            </p>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-blue-500 mt-2 btn-ghost mr-6"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(task._id)}
+              className="text-red-500 mt-2 btn-ghost"
+            >
+              Delete
+            </button>
+          </>
+        )}
       </div>
     );
   };
@@ -177,11 +259,8 @@ const Home = () => {
     const [{ isOver }, drop] = useDrop(() => ({
       accept: "TASK",
       drop: (item) => {
-        if (item.category === category) {
-          moveTaskInCategory(item, category);
-        } else {
-          moveTask(item, category);
-        }
+        if (item.category === category) return;
+        moveTask(item, category);
       },
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),
@@ -191,7 +270,9 @@ const Home = () => {
     return (
       <div
         ref={drop}
-        className={`p-4 card shadow-xl ${isOver ? "bg-gray-200" : ""}`}
+        className={`p-4 card shadow-xl min-h-[200px] ${
+          isOver ? "bg-gray-200" : ""
+        }`}
       >
         <h1 className="font-bold text-lg underline">{title}</h1>
         {tasks

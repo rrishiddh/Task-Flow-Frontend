@@ -3,7 +3,7 @@
 ## Project Name: TaskFlow
 
 ### A brief description: 
-- TaskFlow is a task management application that enables users to efficiently add, edit, delete, and reorder tasks using an intuitive drag-and-drop interface. The tasks are categorized into three sections: To-Do, In Progress, and Done, ensuring seamless workflow organization. The application features real-time database synchronization to maintain data persistence and is designed with a clean, minimalistic, and fully responsive UI.
+- TaskFlow is a task management application that enables users to efficiently add, edit, delete, and reorder tasks using an intuitive drag-and-drop interface. The tasks are categorized into three sections: To-Do, In Progress, and Done, ensuring seamless workflow organization. The application features real-time database synchronization to maintain data persistence and is designed with a clean, minimalistic and fully responsive UI.
  
 
 
@@ -110,11 +110,11 @@
 ###
 
 ##  Live Link: 
-### Netlify : []()
+### Netlify : [https://job-task-rrishiddh.netlify.app](https://job-task-rrishiddh.netlify.app)
 
 ### 
 ##  GitHub Repo Link: 
-###  Server Side : []()
+###  Server Side : [https://github.com/rrishiddh/Task-Flow-Backend](https://github.com/rrishiddh/Task-Flow-Backend)
 
 
 ### 

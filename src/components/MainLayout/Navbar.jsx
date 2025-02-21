@@ -24,7 +24,7 @@ const Navbar = () => {
               className="flex items-center gap-1 text-lg max-sm:text-base handlee"
             >
               <img
-                className="w-7 max-sm:hidden"
+                className="w-7 "
                 src="https://img.icons8.com/?size=100&id=JiXLgJKyZix0&format=png&color=000000"
                 alt=""
               />
